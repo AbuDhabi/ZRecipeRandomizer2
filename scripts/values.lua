@@ -1,6 +1,6 @@
 local F = {}
 F.default_tech_name = "z-randomizer-DEFAULT"
-F.item_types = {"item", "ammo", "capsule", "gun", "item-with-entity-data", "item-with-label", "item-with-inventory", "item-with-tags", "selection-tool", "rail-planner", "spidertron-remote", "module", "tool", "armor", "repair-tool"}
+F.item_types = {"item", "ammo", "capsule", "gun", "item-with-entity-data", "selection-tool", "rail-planner", "spidertron-remote", "module", "tool", "armor", "repair-tool"}
 F.default_complexity = 5
 F.data_missing = "z-randomizer-DATA-MISSING"
 F.data_recipes = "z-randomizer-DATA-RECIPES"
