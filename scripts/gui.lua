@@ -111,11 +111,11 @@ local function popup(event, t, data)
 end
 
 function F.run_checks(event)
-    if game.item_prototypes["big-data-" .. values.data_missing] then
+    if defines.prototypes.item["big-data-" .. values.data_missing] then
         local missing = bigunpack(values.data_missing)
         popup(event, "missing", missing)
     end
-    if game.item_prototypes["big-data-" .. values.data_recipes] then
+    if defines.prototypes.item["big-data-" .. values.data_recipes] then
         local recipes = bigunpack(values.data_recipes)
         popup(event, "recipes", recipes)
     end
