@@ -18,6 +18,6 @@
 	"! space-age",
 	"! quality"
     ],
-    "description": "Credit goes to Villfuk02 for the version that works on 1.x.\n\n\Currently only compatible with the base game.n\nRandomizes all recipe ingredients to make every game feel different!\nFully configurable, theoretically works with all mods, checks dependencies, keeps recipes fair!",
+    "description": "Credit goes to Villfuk02 for the version that works on 1.x.\n\nCurrently only compatible with the base game.n\nRandomizes all recipe ingredients to make every game feel different!\nFully configurable, theoretically works with all mods, checks dependencies, keeps recipes fair!",
     "factorio_version": "2.0"
 }
