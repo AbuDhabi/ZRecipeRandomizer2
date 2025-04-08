@@ -1,8 +1,8 @@
 {
     "name": "ZRecipeRandomizer2",
-    "version": "2.0.0",
-    "title": "Vill's Recipe Randomizer (2.0)",
-    "author": "Villfuk02 (original), AbuDhabi (2.0 port)",
+    "version": "2.0.1",
+    "title": "Vill's Recipe Randomizer (2.x)",
+    "author": "AbuDhabi",
     "dependencies": [
         "base >= 2.0.0",
         "big-data-string2",
@@ -14,10 +14,10 @@
         "(?) omnimatter_fluid",
         "! omnimatter_compression",
         "(?) SciencePackGalore",
-		"? elevated-rails",
-		"? space-age",
-		"? quality"
+	"? elevated-rails",
+	"! space-age",
+	"! quality"
     ],
-    "description": "Randomizes all recipe ingredients to make every game feel different!\nFully configurable, Works with all mods, Checks dependencies, Keeps recipes fair!",
+    "description": "Credit goes to Villfuk02 for the version that works on 1.x.\n\n\Currently only compatible with the base game.n\nRandomizes all recipe ingredients to make every game feel different!\nFully configurable, theoretically works with all mods, checks dependencies, keeps recipes fair!",
     "factorio_version": "2.0"
 }
