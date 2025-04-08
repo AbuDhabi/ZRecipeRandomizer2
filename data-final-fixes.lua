@@ -8,8 +8,8 @@ local random = require "scripts.random"
 random.seed(settings.startup["z-randomizer-seed"].value)
 local prepare = require "scripts.prepare"
 local search = require "scripts.search"
-local old_resources = require "scripts.resources"
-local new_resources = require "scripts/resources"
+local old_resources = require "scripts.old_resources"
+local new_resources = require "scripts.new_resources"
 local missing_check = require "scripts.missing_check"
 local values = require "scripts.values"
 

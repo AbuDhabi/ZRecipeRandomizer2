@@ -1,7 +1,7 @@
 local id = require "scripts.id"
 local random = require "scripts.random"
-local old_resources = require "scripts.resources"
-local new_resources = require "scripts/resources"
+local old_resources = require "scripts.old_resources"
+local new_resources = require "scripts.new_resources"
 local resource_util = require "scripts.resource_util"
 local values = require "scripts.values"
 
