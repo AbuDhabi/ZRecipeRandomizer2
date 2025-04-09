@@ -8,8 +8,7 @@ local random = require "scripts.random"
 random.seed(settings.startup["z-randomizer-seed"].value)
 local prepare = require "scripts.prepare"
 local search = require "scripts.search"
-local old_resources = require "scripts.old_resources"
-local new_resources = require "scripts.new_resources"
+local resources = require "scripts.resources"
 local missing_check = require "scripts.missing_check"
 local values = require "scripts.values"
 
@@ -45,8 +44,10 @@ if not missing then
     local default_categories, category_unlocks = prepare.categories(recipes)
     local unstackable = prepare.unstackable()
 
-    old_resources.init(default_values, default_categories, category_unlocks, dont_randomize_ingredients, recipes)
-    new_resources.init(default_values, default_categories, category_unlocks)
+    local old_resources = resources.new()
+	old_resources.init(default_values, default_categories, category_unlocks, dont_randomize_ingredients, recipes)
+    local new_resources = resources.new()
+	new_resources.init(default_values, default_categories, category_unlocks)
 
     log("PREPARATION DONE!")
 
@@ -85,7 +86,7 @@ if not missing then
 
             local max_raw = resource_util.multiply(pre_raw, max_value / pattern.raw.value)
 
-            for ings in search.ingredient_combinations(pattern.pattern, pattern.changeable, r, max_raw, max_value, cv, dont_randomize_ingredients, dependencies == "branched", allowed) do
+            for ings in search.ingredient_combinations(old_resources, new_resources, pattern.pattern, pattern.changeable, r, max_raw, max_value, cv, dont_randomize_ingredients, dependencies == "branched", allowed) do
                 tries = tries + 1
                 total_tries = total_tries + 1
                 if dupe[r.category] then
@@ -94,7 +95,7 @@ if not missing then
                         ings = nil
                     end
                 end
-                ings = prepare.amounts(pattern.changeable, ings, min_value, max_value, max_raw, min_time, max_time, resource_variance, unstackable)
+                ings = prepare.amounts(old_resources, new_resources, pattern.changeable, ings, min_value, max_value, max_raw, min_time, max_time, resource_variance, unstackable)
                 if ings then
                     local nr = table.deepcopy(r)
                     nr.ing = ings

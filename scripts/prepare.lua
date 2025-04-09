@@ -1,7 +1,5 @@
 local id = require "scripts.id"
 local random = require "scripts.random"
-local old_resources = require "scripts.old_resources"
-local new_resources = require "scripts.new_resources"
 local resource_util = require "scripts.resource_util"
 local values = require "scripts.values"
 
@@ -524,7 +522,7 @@ function F.dont_randomize(recipes)
     return rec, ing
 end
 
-function F.amounts(changeable, ings, min_value, max_value, max_raw, min_time, max_time, resource_variance, unstackable)
+function F.amounts(old_resources, new_resources, changeable, ings, min_value, max_value, max_raw, min_time, max_time, resource_variance, unstackable)
     if ings == nil then
         return
     end

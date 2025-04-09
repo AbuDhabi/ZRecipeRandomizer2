@@ -1,7 +1,5 @@
 local id = require "scripts.id"
 local random = require "scripts.random"
-local old_resources = require "scripts.old_resources"
-local new_resources = require "scripts.new_resources"
 local resource_util = require "scripts.resource_util"
 local values = require "scripts.values"
 
@@ -78,7 +76,7 @@ function F.tech(tech, check_dependencies)
     end
 end
 
-function F.ingredient_combinations(pattern, changeable, recipe, max_raw, max_value, complexity_variance, dont_randomize_ingredients, branched, allowed)
+function F.ingredient_combinations(old_resources, new_resources, pattern, changeable, recipe, max_raw, max_value, complexity_variance, dont_randomize_ingredients, branched, allowed)
     local max_rr = table.deepcopy(max_raw)
     local min_comp, max_comp = math.huge, 0
     for key, value in pairs(pattern) do
