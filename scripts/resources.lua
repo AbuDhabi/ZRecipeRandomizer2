@@ -1,6 +1,5 @@
-local id = require "scripts.id"
 local resource_util = require "scripts.resource_util"
-local values = require "scripts.values"
+local util = require "scripts.util"
 
 local resourcesModule = {}
 
@@ -32,7 +31,7 @@ function resourcesModule.new()
 	F.base_raw = {value = 0}
 
 	function F.init(defaults, default_categories, cat_unlocks, d_r_i, rs)
-		F.current_tech = values.default_tech_name
+		F.current_tech = util.default_tech_name
 		F.dont_randomize_ingredients = d_r_i
 		F.recipes = rs
 		F.unlocked_categories = table.deepcopy(default_categories)
@@ -47,7 +46,7 @@ function resourcesModule.new()
 			elseif tbl.items then
 				F.item_defaults[#F.item_defaults + 1] = {locks = table.deepcopy(tbl.items), item = item, value = tbl.value}
 			else
-				F.update(item, {value = tbl.value, complexity = values.default_complexity, [item] = 1}, nil, {}, true)
+				F.update(item, {value = tbl.value, complexity = util.default_complexity, [item] = 1}, nil, {}, true)
 			end
 			F.base_raw[item] = 1 / tbl.value
 		end
@@ -115,7 +114,7 @@ function resourcesModule.new()
 		end
 		for i = 1, #recipe.ing, 1 do
 			local ing = recipe.ing[i]
-			local item = id.dot(ing)
+			local item = util.dot(ing)
 			local r = table.deepcopy(F.rawTBN[item])
 			if r and not r.time then
 				r.time = 1
@@ -150,7 +149,7 @@ function resourcesModule.new()
 			return
 		end
 
-		local comp = {value = 0, time = 4 * r.time, complexity = values.default_complexity}
+		local comp = {value = 0, time = 4 * r.time, complexity = util.default_complexity}
 		local ex = {}
 		for name, amt in pairs(r.res) do
 			ex[name] = amt
@@ -309,7 +308,7 @@ function resourcesModule.new()
 			end
 			if F.default[item] and not override_default then
 				if F.rawTBN[item] and F.rawTBN[item].value * 0.99999 > new_comp.value and F.dont_randomize_ingredients then
-					log(values.get_progress() .. "\nAlternative data for resource " .. item .. ": " .. serpent.line(new_comp))
+					log(util.get_progress() .. "\nAlternative data for resource " .. item .. ": " .. serpent.line(new_comp))
 				end
 				if not F.rawTBN[item].time then
 					F.rawTBN[item].time = new_comp.time
@@ -344,7 +343,7 @@ function resourcesModule.new()
 					end
 					if cycle then
 						if #string.gsub(table.concat(trace, "."), "[^%.]+", "") < 40 then
-							log(values.get_progress() .. "\nLoop detected: " .. table.concat(trace, " > "))
+							log(util.get_progress() .. "\nLoop detected: " .. table.concat(trace, " > "))
 							-- F.waiting[item][nr] = not recalculate_loop(nr, trace)
 						else
 							F.waiting[item][nr] = true
@@ -360,10 +359,10 @@ function resourcesModule.new()
 	local function prepare(recipe)
 		local rec = {ing = {}, res = {}}
 		for _, v in pairs(recipe.ing) do
-			rec.ing[id.dot(v)] = v.amount
+			rec.ing[util.dot(v)] = v.amount
 		end
 		for _, v in pairs(recipe.res) do
-			rec.res[id.dot(v)] = v.amount
+			rec.res[util.dot(v)] = v.amount
 		end
 		local r = resource_util.simplify_recipe(rec)
 		r.complexity = r.ia + r.ra * 2 - 3
@@ -377,7 +376,7 @@ function resourcesModule.new()
 		F.tech_defaults[F.current_tech] = nil
 		if to_unlock then
 			for _, tbl in ipairs(to_unlock) do
-				F.update(tbl.item, {value = tbl.value, complexity = values.default_complexity, [tbl.item] = 1}, nil, {}, true)
+				F.update(tbl.item, {value = tbl.value, complexity = util.default_complexity, [tbl.item] = 1}, nil, {}, true)
 			end
 		end
 	end
@@ -395,7 +394,7 @@ function resourcesModule.new()
 				end
 			end
 			if a and (not F.unlocked_itemsTBN[tbl.item] or u) then
-				F.update(tbl.item, {value = tbl.value, complexity = values.default_complexity, [tbl.item] = 1}, nil, {}, true)
+				F.update(tbl.item, {value = tbl.value, complexity = util.default_complexity, [tbl.item] = 1}, nil, {}, true)
 			end
 		end
 		F.queue.run()

@@ -1,7 +1,6 @@
-local id = require "scripts.id"
 local random = require "scripts.random"
 local resource_util = require "scripts.resource_util"
-local values = require "scripts.values"
+local util = require "scripts.util"
 
 local F = {}
 
@@ -9,16 +8,16 @@ function F.tech(tech, check_dependencies)
     local to_generate = {}
     local tech_amt = 1
     for n,_ in pairs(tech) do
-        if n ~= values.default_tech_name then
+        if n ~= util.default_tech_name then
             to_generate[tech_amt] = n
             tech_amt = tech_amt + 1
         end
     end
-    if not values.tech_amt then
-        values.tech_amt = tech_amt
+    if not util.tech_amt then
+        util.tech_amt = tech_amt
     end
     random.shuffle(to_generate)
-    table.insert(to_generate, 1, values.default_tech_name)
+    table.insert(to_generate, 1, util.default_tech_name)
 
     local index = 0
     local attempts = 0
@@ -67,7 +66,7 @@ function F.tech(tech, check_dependencies)
                         end
                     end
 
-                    log("    " .. values.get_progress(c_tech, 0) .. "   Tech " .. c_tech .. " (" .. tech_amt .. " left): " .. n)
+                    log("    " .. util.get_progress(c_tech, 0) .. "   Tech " .. c_tech .. " (" .. tech_amt .. " left): " .. n)
                     c_tech = c_tech + 1
                     return n, t
                 end
@@ -97,13 +96,13 @@ function F.ingredient_combinations(old_resources, new_resources, pattern, change
     local used = {}
     for key, value in pairs(pattern) do
         if value.name then
-            used[id.dot(value)] = true
+            used[util.dot(value)] = true
         end
     end
     for entry, _ in pairs(old_resources.unlocked_items()) do
         if not used[entry] then
             local raw = new_resources.raw(entry)
-            if raw and raw.value > 0 and raw.value <= max_value and min_comp <= raw.complexity and max_comp >= raw.complexity and not dont_randomize_ingredients[entry] and not (#recipe.res == 1 and id.dot(recipe.res[1]) == entry) and (not branched or new_resources.is_allowed(entry, allowed)) then
+            if raw and raw.value > 0 and raw.value <= max_value and min_comp <= raw.complexity and max_comp >= raw.complexity and not dont_randomize_ingredients[entry] and not (#recipe.res == 1 and util.dot(recipe.res[1]) == entry) and (not branched or new_resources.is_allowed(entry, allowed)) then
                 if resource_util.fits(raw, max_rr) then
                     local type = string.match(entry, "(%a+)%.")
                     avail[type][#avail[type]+1] = entry

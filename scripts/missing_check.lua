@@ -1,4 +1,4 @@
-local id = require "scripts.id"
+local util = require "scripts.util"
 
 local F = {}
 
@@ -76,7 +76,7 @@ function F.resources(rs, defaults, extra)
             local to_find = {}
             for n, v in pairs(r.res) do
                 if type(n) == "number" then
-                    n = id.dot(v)
+                    n = util.dot(v)
                 end
                 if not prereqs[n] then
                     prereqs[n] = {}
@@ -91,7 +91,7 @@ function F.resources(rs, defaults, extra)
             end
             for n, v in pairs(r.ing) do
                 if type(n) == "number" then
-                    n = id.dot(v)
+                    n = util.dot(v)
                 end
                 if not available[n] then
                     to_find[#to_find+1] = n
@@ -169,7 +169,7 @@ function F.format_recipes(missing_recipes, all_recipes, unlocked_items, category
         for rec, _ in pairs(value) do
             for _, res in pairs(all_recipes[rec].res) do
                 if not unlocked_items[req] then
-                    conversions[req][#conversions[req]+1] = "[i]" .. id.dot(res)
+                    conversions[req][#conversions[req]+1] = "[i]" .. util.dot(res)
                 end
             end
         end

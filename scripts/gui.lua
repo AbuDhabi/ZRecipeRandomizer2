@@ -1,5 +1,5 @@
 local bigunpack = require "__big-data-string2__.unpack"
-local values = require "scripts.values"
+local util = require "scripts.util"
 local missing_check = require "scripts.missing_check"
 local F = {}
 
@@ -111,12 +111,12 @@ local function popup(event, t, data)
 end
 
 function F.run_checks(event)
-    if defines.prototypes.item["big-data-" .. values.data_missing] then
-        local missing = bigunpack(values.data_missing)
+    if defines.prototypes.item["big-data-" .. util.data_missing] then
+        local missing = bigunpack(util.data_missing)
         popup(event, "missing", missing)
     end
-    if defines.prototypes.item["big-data-" .. values.data_recipes] then
-        local recipes = bigunpack(values.data_recipes)
+    if defines.prototypes.item["big-data-" .. util.data_recipes] then
+        local recipes = bigunpack(util.data_recipes)
         popup(event, "recipes", recipes)
     end
 end

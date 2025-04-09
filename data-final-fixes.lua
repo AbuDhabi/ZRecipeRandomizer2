@@ -3,14 +3,13 @@ local bigpack = require "__big-data-string2__.pack"
 
 -- PREPARE HELPERS
 local resource_util = require "scripts.resource_util"
-local id = require "scripts.id"
 local random = require "scripts.random"
 random.seed(settings.startup["z-randomizer-seed"].value)
 local prepare = require "scripts.prepare"
 local search = require "scripts.search"
 local resources = require "scripts.resources"
 local missing_check = require "scripts.missing_check"
-local values = require "scripts.values"
+local util = require "scripts.util"
 
 -- PREPARE SETTINGS
 local resource_variance = math.exp(settings.startup["z-randomizer-resource-variance"].value - 2) * 0.3
@@ -39,13 +38,14 @@ local default_values = prepare.default_values(recipes)
 local missing = missing_check.resources(recipes, default_values)
 
 if not missing then
-    local dont_randomize, dont_randomize_ingredients = prepare.dont_randomize(recipes)
-    local dupe = prepare.duplicate_prevention(dont_randomize, recipes)
+    log("PREPARING RECIPES...")
+    local recipes_not_to_randomize, ingredients_not_to_randomize = prepare.get_ingredients_and_recipe_not_to_randomize(recipes)
+    local dupe = prepare.duplicate_prevention(recipes_not_to_randomize, recipes)
     local default_categories, category_unlocks = prepare.categories(recipes)
     local unstackable = prepare.unstackable()
 
     local old_resources = resources.new()
-	old_resources.init(default_values, default_categories, category_unlocks, dont_randomize_ingredients, recipes)
+	old_resources.init(default_values, default_categories, category_unlocks, ingredients_not_to_randomize, recipes)
     local new_resources = resources.new()
 	new_resources.init(default_values, default_categories, category_unlocks)
 
@@ -56,7 +56,7 @@ if not missing then
         if recipe_name == "centrifuge" then
             log("h")
         end
-        log("  " .. values.get_progress() .. "                Recipe: " .. recipe_name)
+        log("  " .. util.get_progress() .. "                Recipe: " .. recipe_name)
         local r = recipes[recipe_name]
 
         if not pattern then
@@ -65,10 +65,10 @@ if not missing then
 
         if not pattern or #pattern.changeable == 0 then
             if dupe[r.category] then
-                local dupe_address = id.dupe_address(r.ing)
+                local dupe_address = util.dupe_address(r.ing)
                 dupe[r.category][dupe_address] = recipe_name
             end
-            log("  " .. values.get_progress() .. "                     (nothing to change)")
+            log("  " .. util.get_progress() .. "                     (nothing to change)")
             return table.deepcopy(r)
         end
 
@@ -86,11 +86,11 @@ if not missing then
 
             local max_raw = resource_util.multiply(pre_raw, max_value / pattern.raw.value)
 
-            for ings in search.ingredient_combinations(old_resources, new_resources, pattern.pattern, pattern.changeable, r, max_raw, max_value, cv, dont_randomize_ingredients, dependencies == "branched", allowed) do
+            for ings in search.ingredient_combinations(old_resources, new_resources, pattern.pattern, pattern.changeable, r, max_raw, max_value, cv, ingredients_not_to_randomize, dependencies == "branched", allowed) do
                 tries = tries + 1
                 total_tries = total_tries + 1
                 if dupe[r.category] then
-                    local dupe_address = id.dupe_address(ings)
+                    local dupe_address = util.dupe_address(ings)
                     if dupe[r.category][dupe_address] then
                         ings = nil
                     end
@@ -102,11 +102,11 @@ if not missing then
                     nr.time = nt
 
                     if dupe[r.category] then
-                        local dupe_address = id.dupe_address(ings)
+                        local dupe_address = util.dupe_address(ings)
                         dupe[r.category][dupe_address] = recipe_name
                     end
 
-                    log(" " .. values.get_progress() .. "                     (cycles: " .. cycles .. " tries: " .. total_tries .. ")")
+                    log(" " .. util.get_progress() .. "                     (cycles: " .. cycles .. " tries: " .. total_tries .. ")")
                     return nr
                 end
                 if tries >= 1500 / (#pattern.changeable + 1) then
@@ -129,10 +129,10 @@ if not missing then
                 pattern.raw = resource_util.subtract(pattern.raw, pattern.raws[to_change])
             else
                 if dupe[r.category] then
-                    local dupe_address = id.dupe_address(r.ing)
+                    local dupe_address = util.dupe_address(r.ing)
                     dupe[r.category][dupe_address] = recipe_name
                 end
-                log(" " .. values.get_progress() .. "                     (gave up after " .. cycles .. " cycles)")
+                log(" " .. util.get_progress() .. "                     (gave up after " .. cycles .. " cycles)")
                 return table.deepcopy(r)
             end
         end
@@ -144,14 +144,14 @@ if not missing then
         local amt = #t.recipes
         random.shuffle(t.recipes)
         for i, r in ipairs(t.recipes) do
-            log(" " .. values.get_progress(nil, (i - 1) / amt) .. "          Step: " .. i .. "/" .. amt)
+            log(" " .. util.get_progress(nil, (i - 1) / amt) .. "          Step: " .. i .. "/" .. amt)
             -- CALCULATE RESOURCES
             if recipes[r] then
                 local to_randomize = old_resources.calculate(recipes[r], n, t.allowed, t.recipes)
                 if dependencies ~= "none" then
                     for rn, p in pairs(to_randomize) do
                         if recipes[rn] then
-                            if dont_randomize[rn] then
+                            if recipes_not_to_randomize[rn] then
                                 new_resources.calculate(recipes[rn], n, t.allowed, t.recipes)
                             else
                                 local cat = true
@@ -206,7 +206,7 @@ if not missing then
             random.shuffle(t.recipes)
             for _, r in pairs(t.recipes) do
                 if not randomized[r] and recipes[r] then
-                    if dont_randomize[r] then
+                    if recipes_not_to_randomize[r] then
                         new_resources.calculate(recipes[r], t.allowed, t.recipes)
                     else
                         randomized[r] = true
@@ -228,13 +228,13 @@ if not missing then
         missing = missing_check.resources(not_calculated, default_values, unlocked_items)
         if missing then
             log("\nMISSING RESOURCES:\n" .. missing)
-            data:extend{bigpack(values.data_missing, missing)}
+            data:extend{bigpack(util.data_missing, missing)}
         else
             local missing_formatted = missing_check.format_recipes(missing_recipes, recipes, unlocked_items, category_unlocks)
-            data:extend{bigpack(values.data_recipes, table.concat(missing_formatted, "\n"))}
+            data:extend{bigpack(util.data_recipes, table.concat(missing_formatted, "\n"))}
         end
     end
 else
     log("\nMISSING RESOURCES:\n" .. missing)
-    data:extend{bigpack(values.data_missing, missing)}
+    data:extend{bigpack(util.data_missing, missing)}
 end

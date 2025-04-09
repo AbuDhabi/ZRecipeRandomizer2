@@ -1,7 +1,6 @@
-local id = require "scripts.id"
 local random = require "scripts.random"
 local resource_util = require "scripts.resource_util"
-local values = require "scripts.values"
+local util = require "scripts.util"
 
 local do_hidden = settings.startup["z-randomizer-hidden"].value
 
@@ -10,42 +9,43 @@ local F = {}
 function F.recipes()
     local recipes = {}
 
-    for n, o in pairs(data.raw.recipe) do
+    -- POPULATE RECIPES FROM FACTORIO DATA
+    for recipe_name, recipe_definition in pairs(data.raw.recipe) do
         local original = nil
-        if o.normal then
-            original = table.deepcopy(o.normal)
-        elseif o.expensive then
-            original = table.deepcopy(o.expensive)
+        if recipe_definition.normal then
+            original = table.deepcopy(recipe_definition.normal)
+        elseif recipe_definition.expensive then
+            original = table.deepcopy(recipe_definition.expensive)
         else
-            original = table.deepcopy(o)
+            original = table.deepcopy(recipe_definition)
         end
-        if do_hidden ~= "ignore" or (not o.hidden and not original.hidden) then
-            local r = {}
+        if do_hidden ~= "ignore" or (not recipe_definition.hidden and not original.hidden) then
+            local recipe = {}
             if original.enabled == nil or original.enabled == "true" then
-                r.enabled = true
+                recipe.enabled = true
             else
-                r.enabled = original.enabled
+                recipe.enabled = original.enabled
             end
             if original.results then
-                r.res = original.results
+                recipe.res = original.results
             elseif original.result then
-                r.res = {{original.result, original.result_count or 1}}
+                recipe.res = {{original.result, original.result_count or 1}}
             end
 
-            r.time = original.energy_required or o.energy_required
-            r.category = original.category or o.category
-            r.hidden = original.hidden or o.hidden
-            r.name = n
-            if r.res and original.ingredients then
-                r.ing = original.ingredients
-                recipes[n] = r
+            recipe.time = original.energy_required or recipe_definition.energy_required
+            recipe.category = original.category or recipe_definition.category
+            recipe.hidden = original.hidden or recipe_definition.hidden
+            recipe.name = recipe_name
+            if recipe.res and original.ingredients then
+                recipe.ing = original.ingredients
+                recipes[recipe_name] = recipe
             end
         end
     end
 
     -- ADD ROCKET LAUNCH PRODUCTS AND SPENT FUEL
-    for i = 1, #values.item_types, 1 do
-        for name, item in pairs(data.raw[values.item_types[i]]) do
+    for i = 1, #util.item_types, 1 do
+        for name, item in pairs(data.raw[util.item_types[i]]) do
             if item.rocket_launch_products then
                 recipes[name .. "#rocket-launch"] = {name = name .. "#rocket-launch", enabled = true, time = 5, ing = {{name, 1}, {"rocket-part", 100}}, res = item.rocket_launch_products}
             elseif item.rocket_launch_product then
@@ -56,7 +56,6 @@ function F.recipes()
             end
         end
     end
-    local rocket_launch = {}
 
     -- ADD SEABLOCK HARDCODED RESEARCH
     if mods["SeaBlockMetaPack"] then
@@ -67,107 +66,109 @@ function F.recipes()
     end
 
     -- UNIFY FORMAT
+    local rocket_launch = {}
 
-    for name, r in pairs(recipes) do
-        for i, _ in pairs(r.ing) do
-            if r.ing[i][1] and r.ing[i][2] then
-                r.ing[i].type = "item"
-                r.ing[i].name = r.ing[i][1]
-                r.ing[i].amount = r.ing[i][2]
-                r.ing[i][1] = nil
-                r.ing[i][2] = nil
-            elseif r.ing[i][1] then
-                r.ing[i].type = "item"
-                r.ing[i].name = r.ing[i][1]
-                r.ing[i].amount = 1
-                r.ing[i][1] = nil
-            elseif not r.ing[i].type then
-                r.ing[i].type = "item"
+    for recipe_name, recipe in pairs(recipes) do
+        for i, _ in pairs(recipe.ing) do
+            if recipe.ing[i][1] and recipe.ing[i][2] then
+                recipe.ing[i].type = "item"
+                recipe.ing[i].name = recipe.ing[i][1]
+                recipe.ing[i].amount = recipe.ing[i][2]
+                recipe.ing[i][1] = nil
+                recipe.ing[i][2] = nil
+            elseif recipe.ing[i][1] then
+                recipe.ing[i].type = "item"
+                recipe.ing[i].name = recipe.ing[i][1]
+                recipe.ing[i].amount = 1
+                recipe.ing[i][1] = nil
+            elseif not recipe.ing[i].type then
+                recipe.ing[i].type = "item"
             end
         end
 
-        for i, _ in pairs(r.res) do
-            if r.res[i][1] and r.res[i][2] then
-                r.res[i].type = "item"
-                r.res[i].name = r.res[i][1]
-                r.res[i].amount = r.res[i][2]
-                r.res[i][1] = nil
-                r.res[i][2] = nil
-            elseif r.res[i][1] then
-                r.res[i].type = "item"
-                r.res[i].name = r.res[i][1]
-                r.res[i].amount = 1
-                r.res[i][1] = nil
-            elseif not r.res[i].type then
-                r.res[i].type = "item"
+        for i, _ in pairs(recipe.res) do
+            if recipe.res[i][1] and recipe.res[i][2] then
+                recipe.res[i].type = "item"
+                recipe.res[i].name = recipe.res[i][1]
+                recipe.res[i].amount = recipe.res[i][2]
+                recipe.res[i][1] = nil
+                recipe.res[i][2] = nil
+            elseif recipe.res[i][1] then
+                recipe.res[i].type = "item"
+                recipe.res[i].name = recipe.res[i][1]
+                recipe.res[i].amount = 1
+                recipe.res[i][1] = nil
+            elseif not recipe.res[i].type then
+                recipe.res[i].type = "item"
             end
-            if r.res[i].amount_min then
-                r.res[i].amount = math.max(r.res[i].amount_min, (r.res[i].amount_min + r.res[i].amount_max) / 2)
+            if recipe.res[i].amount_min then
+                recipe.res[i].amount = math.max(recipe.res[i].amount_min, (recipe.res[i].amount_min + recipe.res[i].amount_max) / 2)
             end
-            if r.res[i].probability then
-                r.res[i].amount = r.res[i].amount * math.max(math.min(r.res[i].probability, 1), 0)
+            if recipe.res[i].probability then
+                recipe.res[i].amount = recipe.res[i].amount * math.max(math.min(recipe.res[i].probability, 1), 0)
             end
-            if r.res[i].multiplier then
-                r.res[i].amount = r.res[i].amount * r.res[i].multiplier
+            if recipe.res[i].multiplier then
+                recipe.res[i].amount = recipe.res[i].amount * recipe.res[i].multiplier
             end
         end
 
-        for i, _ in pairs(r.res) do
-            for j, _ in pairs(r.res) do
-                if i < j and r.res[i].type == r.res[j].type and r.res[i].name == r.res[j].name then
-                    r.res[i].amount = r.res[i].amount + r.res[j].amount
-                    r.res[j] = nil
+        for i, _ in pairs(recipe.res) do
+            for j, _ in pairs(recipe.res) do
+                if i < j and recipe.res[i].type == recipe.res[j].type and recipe.res[i].name == recipe.res[j].name then
+                    recipe.res[i].amount = recipe.res[i].amount + recipe.res[j].amount
+                    recipe.res[j] = nil
                 end
             end
         end
 
-        for i, _ in pairs(r.res) do
-            if r.res[i].amount == 0 then
-                r.res[i] = nil
+        -- CLEAN UP MISSING PROPERTIES
+        for i, _ in pairs(recipe.res) do
+            if recipe.res[i].amount == 0 then
+                recipe.res[i] = nil
             end
         end
-        local n_res = {}
-        for _, v in pairs(r.res) do
-            n_res[#n_res + 1] = v
+        local new_res = {}
+        for _, value in pairs(recipe.res) do
+            new_res[#new_res + 1] = value
         end
-        r.res = n_res
+        recipe.res = new_res
 
-        for i, _ in pairs(r.ing) do
-            if r.ing[i].amount == 0 then
-                r.ing[i] = nil
+        for i, _ in pairs(recipe.ing) do
+            if recipe.ing[i].amount == 0 then
+                recipe.ing[i] = nil
             end
         end
-        local n_ing = {}
-        for _, v in pairs(r.ing) do
-            n_ing[#n_ing + 1] = v
+        local new_ing = {}
+        for _, value in pairs(recipe.ing) do
+            new_ing[#new_ing + 1] = value
         end
-        r.ing = n_ing
+        recipe.ing = new_ing
 
-        if r.time == nil then
-            r.time = 0.5
-        end
-
-        if r.category == nil then
-            r.category = "crafting"
+        if recipe.time == nil then
+            recipe.time = 0.5
         end
 
-        if string.match(name, "#rocket%-launch") then
-            local ingredient = id.dot(r.ing[1])
-            for _, res in pairs(r.res) do
-                rocket_launch[ingredient] = id.dot(res)
+        if recipe.category == nil then
+            recipe.category = "crafting"
+        end
+
+        if string.match(recipe_name, "#rocket%-launch") then
+            local ingredient = util.dot(recipe.ing[1])
+            for _, res in pairs(recipe.res) do
+                rocket_launch[ingredient] = util.dot(res)
             end
         end
 
-        if name == "cliff-explosives" then
-            for key, value in pairs(r.ing) do
+        if recipe_name == "cliff-explosives" then
+            for key, value in pairs(recipe.ing) do
                 if value.name == "empty-barrel" then
                     value.name = "steel-plate"
-                    r.ing[key] = value
+                    recipe.ing[key] = value
                 end
             end
         end
 
-        recipes[name] = r
+        recipes[recipe_name] = recipe
     end
 
     return recipes, rocket_launch
@@ -177,12 +178,12 @@ function F.all_ingredients(recipes)
     local ing, res, all = {}, {}, {}
     for _, r in pairs(recipes) do
         for _, rr in ipairs(r.res) do
-            all[id.dot(rr)] = true
-            res[id.dot(rr)] = true
+            all[util.dot(rr)] = true
+            res[util.dot(rr)] = true
         end
         for _, ri in ipairs(r.ing) do
-            all[id.dot(ri)] = true
-            ing[id.dot(ri)] = true
+            all[util.dot(ri)] = true
+            ing[util.dot(ri)] = true
         end
     end
     return ing, res, all
@@ -235,7 +236,7 @@ function F.filter_recipes(recipes)
                     break
                 end
             else
-                for _, it in ipairs(values.item_types) do
+                for _, it in ipairs(util.item_types) do
                     if data.raw[it][value.name] and data.raw[it][value.name].hidden then
                         recipes[n] = nil
                         break
@@ -279,7 +280,7 @@ function F.default_values(recipes)
                 if not items then
                     items = {}
                 end
-                items[#items + 1] = id.dot(t, n)
+                items[#items + 1] = util.dot(t, n)
             end
         end
         local total = {tech = tech, value = tonumber(v)}
@@ -287,23 +288,23 @@ function F.default_values(recipes)
             total["items"] = items
         end
         for t, n in string.gmatch(r, "%[(%a+)=([%a%d%-_:]+)%]") do
-            ret[id.dot(t, n)] = total
+            ret[util.dot(t, n)] = total
         end
     end
 
     -- ADD NON-RANDOMIZABLE
     for t, n in string.gmatch(settings.startup["z-randomizer-not-random-resources"].value, "%[(%a+)=([%a%d%-_:]+)%]") do
-        ret[id.dot(t, n)] = {value = math.huge}
+        ret[util.dot(t, n)] = {value = math.huge}
     end
 
     local new_ret = {}
     for _, r in pairs(recipes) do
         for _, v in pairs(r.ing) do
-            local n = id.dot(v)
+            local n = util.dot(v)
             new_ret[n] = ret[n]
         end
         for _, v in pairs(r.res) do
-            local n = id.dot(v)
+            local n = util.dot(v)
             new_ret[n] = ret[n]
         end
     end
@@ -319,7 +320,7 @@ function F.duplicate_prevention(dont_randomize, recipes)
     for i = 1, #dont_randomize, 1 do
         local r = recipes[dont_randomize[i]]
         if ret[r.category] ~= nil then
-            ret[r.category][id.dupe_address(r.ing)] = dont_randomize[i]
+            ret[r.category][util.dupe_address(r.ing)] = dont_randomize[i]
         end
     end
     return ret
@@ -329,13 +330,13 @@ function F.tech(recipes, rocket_launch)
     local tech = {}
     local science = {}
 
-    local default_tech = {pre = {}, recipes = {}, science = {}, allowed = {[values.default_tech_name] = true}}
+    local default_tech = {pre = {}, recipes = {}, science = {}, allowed = {[util.default_tech_name] = true}}
     for n, r in pairs(recipes) do
         if r.enabled == true or r.enabled == "true" then
             default_tech.recipes[#default_tech.recipes + 1] = n
         end
     end
-    tech[values.default_tech_name] = default_tech
+    tech[util.default_tech_name] = default_tech
 
     for n, t in pairs(data.raw.technology) do
         local original = nil
@@ -347,7 +348,7 @@ function F.tech(recipes, rocket_launch)
             original = t
         end
         if (original.hidden == nil or not original.hidden) and (original.enabled == nil or original.enabled) then
-            local nt = {pre = {values.default_tech_name}, recipes = {}, science = {}, allowed = {[n] = true}}
+            local nt = {pre = {util.default_tech_name}, recipes = {}, science = {}, allowed = {[n] = true}}
             if original.prerequisites then
                 nt.pre = table.deepcopy(original.prerequisites)
             end
@@ -355,11 +356,11 @@ function F.tech(recipes, rocket_launch)
                 for _, value in pairs(original.unit.ingredients) do
                     local item
                     if #value == 2 then
-                        item = id.dot("item", value[1])
+                        item = util.dot("item", value[1])
                     elseif value.name and not value.type then
-                        item = id.dot("item", value.name)
+                        item = util.dot("item", value.name)
                     else
-                        item = id.dot(value)
+                        item = util.dot(value)
                     end
                     if not science[item] then
                         science[item] = true
@@ -382,7 +383,7 @@ function F.tech(recipes, rocket_launch)
         for _, r in pairs(t.recipes) do
             if not string.match(r, "#") then
                 for _, res in pairs(recipes[r].res) do
-                    local name = id.dot(res)
+                    local name = util.dot(res)
                     if res.type == "item" and science[name] then
                         science[name] = n
                     end
@@ -413,11 +414,11 @@ function F.categories(recipes)
     local all_cats = {}
     local unlockable_cats = {}
     for category in string.gmatch(settings.startup["z-randomizer-starter-crafting"].value, "([%a%d%-_:]+)") do
-        def_cats[category] = {[values.default_tech_name] = true}
+        def_cats[category] = {[util.default_tech_name] = true}
     end
     if data.raw.character.character and data.raw.character.character.crafting_categories then
         for _, category in pairs(data.raw.character.character.crafting_categories) do
-            def_cats[category] = {[values.default_tech_name] = true}
+            def_cats[category] = {[util.default_tech_name] = true}
         end
     end
 
@@ -426,16 +427,16 @@ function F.categories(recipes)
 
         for _, ing in pairs(r.ing) do
             if ing.type == "item" then
-                local item = id.dot(ing)
+                local item = util.dot(ing)
                 local place
-                for i = 1, #values.item_types, 1 do
-                    if data.raw[values.item_types[i]][ing.name] then
-                        place = data.raw[values.item_types[i]][ing.name].place_result
+                for i = 1, #util.item_types, 1 do
+                    if data.raw[util.item_types[i]][ing.name] then
+                        place = data.raw[util.item_types[i]][ing.name].place_result
                         break
                     end
                 end
                 if place ~= nil then
-                    for _, mt in ipairs(values.machines) do
+                    for _, mt in ipairs(util.machines) do
                         local machine = data.raw[mt][place]
                         if machine ~= nil and machine.crafting_categories ~= nil then
                             for _, cat in pairs(machine.crafting_categories) do
@@ -452,16 +453,16 @@ function F.categories(recipes)
         end
         for _, res in pairs(r.res) do
             if res.type == "item" then
-                local item = id.dot(res)
+                local item = util.dot(res)
                 local place
-                for i = 1, #values.item_types, 1 do
-                    if data.raw[values.item_types[i]][res.name] then
-                        place = data.raw[values.item_types[i]][res.name].place_result
+                for i = 1, #util.item_types, 1 do
+                    if data.raw[util.item_types[i]][res.name] then
+                        place = data.raw[util.item_types[i]][res.name].place_result
                         break
                     end
                 end
                 if place ~= nil then
-                    for _, mt in ipairs(values.machines) do
+                    for _, mt in ipairs(util.machines) do
                         local machine = data.raw[mt][place]
                         if machine ~= nil and machine.crafting_categories ~= nil then
                             for _, cat in pairs(machine.crafting_categories) do
@@ -480,7 +481,7 @@ function F.categories(recipes)
     for cat, _ in pairs(all_cats) do
         if not unlockable_cats[cat] then
             log("MISSING DEFAULT CRAFTING CATEGORY: " .. cat)
-            def_cats[cat] = {[values.default_tech_name] = true}
+            def_cats[cat] = {[util.default_tech_name] = true}
         end
     end
     return def_cats, item_cats
@@ -488,8 +489,8 @@ end
 
 function F.unstackable()
     local u = {}
-    for i = 1, #values.item_types, 1 do
-        for name, item in pairs(data.raw[values.item_types[i]]) do
+    for i = 1, #util.item_types, 1 do
+        for name, item in pairs(data.raw[util.item_types[i]]) do
             if item.stack_size == 1 then
                 u["item." .. name] = true
             end
@@ -498,7 +499,7 @@ function F.unstackable()
     return u
 end
 
-function F.dont_randomize(recipes)
+function F.get_ingredients_and_recipe_not_to_randomize(recipes)
     local rec = {}
     local cats = {}
     local ing = {}
@@ -516,7 +517,7 @@ function F.dont_randomize(recipes)
         end
     end
     for t, n in string.gmatch(settings.startup["z-randomizer-not-random-ingredients"].value, "%[(%a+)=([%a%d%-_:]+)%]") do
-        ing[id.dot(t, n)] = true
+        ing[util.dot(t, n)] = true
     end
 
     return rec, ing
