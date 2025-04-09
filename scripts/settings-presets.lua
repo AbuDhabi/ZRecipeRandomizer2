@@ -60,6 +60,11 @@ local presets = {
     ["omnimatter_fluid"] = {localized_name = "omnimatter-fluid"},
     ["boblibrary"] = {localized_name = "bob-canisters", forbidden_ingredients = {"[item=empty-canister] [item=gas-canister]"}, forbidden_results = {"[item=empty-canister] [item=gas-canister]"}},
     ["FluidicPower"] = {localized_name = "fluidic-power", forbidden_categories = {"fluidic-generate fluidic-transformers"}},
+	["space-age"] = {
+		default_values = "(:[item=coal][item=stone][item=iron-ore][item=copper-ore]:1) ([item=electric-mining-drill][fluid=sulfuric-acid]:[item=uranium-ore]:3) (:[fluid=water]:0.0002) ([item=boiler]:[fluid=steam]:0.0002) ([item=pumpjack]:[fluid=crude-oil]:0.4) ([item=asteroid-collector]:[item=metallic-asteroid-chunk][item=carbonic-asteroid-chunk][item=oxide-asteroid-chunk]:10) ([item=thruster]:[item=yumako][item=jellynut]:3) ([item=thruster]:[item=spoilage]:1) ([item=thruster]:[item=pentapod-egg]:30) ([item=thruster]:[item=tungsten-ore]:6) ([item=thruster]:[item=scrap]:2) ([item=recycler]:[item=holmium-ore]:50) ([item=capture-robot-rocket]:[item=biter-egg]:10) ([item=electromagnetic-science-pack][item=metallurgic-science-pack][item=agricultural-science-pack]:[fluid=lithium-brine]:0.2) ([item=electromagnetic-science-pack][item=metallurgic-science-pack][item=agricultural-science-pack]:[fluid=ammoniacal-solution]:0.02) ([item=railgun-turret]:[item=promethium-asteroid-chunk]:20)",
+		forbidden_ingredients = "[item=barrel][item=turbo-loader][item=express-loader][item=fast-loader][item=loader]",
+        forbidden_results = "[item=barrel][item=turbo-loader][item=express-loader][item=fast-loader][item=loader]",
+	}
 }
 
 function F.get()
