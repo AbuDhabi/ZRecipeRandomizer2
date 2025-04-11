@@ -1,4 +1,17 @@
 ---------------------------------------------------------------------------------------------------
+Version: 2.0.5
+Date: 2025.04.11
+  Changes:
+    - Refactoring
+    - Fix empty barrel name
+    - Get rid 90% of ore ingredients
+    - Filter out recycling recipes for less spam in logs
+    - Add Discovery Tree as optional mod
+    - Add Estate Randomizer as incompatible
+    - Add fluorine as raw ingredient (allowing more Aquilo to be randomized)
+    - Add promethium chunks as non random ingredients
+    - Add fish to unlockable raw materials
+---------------------------------------------------------------------------------------------------
 Version: 2.0.4
 Date: 2025.04.11
   Changes:
