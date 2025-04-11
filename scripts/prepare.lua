@@ -162,7 +162,7 @@ function F.recipes()
         -- ENABLE RANDOMIZATION OF CLIFF EXPLOSIVES
         if recipe_name == "cliff-explosives" then
             for key, value in pairs(recipe.ing) do
-                if value.name == "empty-barrel" then
+                if value.name == "barrel" then
                     value.name = "steel-plate"
                     recipe.ing[key] = value
                 end
