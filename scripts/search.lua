@@ -50,9 +50,6 @@ function F.tech(tech, check_dependencies)
                     attempts = attempts + 1
                 else
                     -- ready
-                    if n == "bob-pumpjacks-2" then
-                        log("h")
-                    end
                     attempts = 0
                     tech_amt = tech_amt - 1
                     table.remove(to_generate, index)

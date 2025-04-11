@@ -159,6 +159,7 @@ function F.recipes()
             end
         end
 
+        -- ENABLE RANDOMIZATION OF CLIFF EXPLOSIVES
         if recipe_name == "cliff-explosives" then
             for key, value in pairs(recipe.ing) do
                 if value.name == "empty-barrel" then
@@ -174,35 +175,20 @@ function F.recipes()
     return recipes, rocket_launch
 end
 
-function F.all_ingredients(recipes)
-    local ing, res, all = {}, {}, {}
-    for _, r in pairs(recipes) do
-        for _, rr in ipairs(r.res) do
-            all[util.dot(rr)] = true
-            res[util.dot(rr)] = true
-        end
-        for _, ri in ipairs(r.ing) do
-            all[util.dot(ri)] = true
-            ing[util.dot(ri)] = true
-        end
-    end
-    return ing, res, all
-end
-
 function F.filter_recipes(recipes)
-    local cats = {}
-    local f_cats = settings.startup["z-randomizer-forbidden-categories"].value
-    for v in string.gmatch(f_cats, "([%a%d%-_:]+)") do
-        cats[v] = true
+    local categories = {}
+    local forbidden_categories = settings.startup["z-randomizer-forbidden-categories"].value
+    for value in string.gmatch(forbidden_categories, "([%a%d%-_:]+)") do
+        categories[value] = true
     end
-    for v, r in pairs(recipes) do
-        if cats[r.category] then
-            recipes[v] = nil
+    for recipe_name, recipe in pairs(recipes) do
+        if categories[recipe.category] then
+            recipes[recipe_name] = nil
         end
     end
 
-    for v in string.gmatch(settings.startup["z-randomizer-forbidden-recipes"].value, "%[recipe=([%a%d%-_:]+)%]") do
-        recipes[v] = nil
+    for value in string.gmatch(settings.startup["z-randomizer-forbidden-recipes"].value, "%[recipe=([%a%d%-_:]+)%]") do
+        recipes[value] = nil
     end
 
     local f_ings = settings.startup["z-randomizer-forbidden-ingredients"].value .. " [item=mining-drone] [item=transport-drone]"

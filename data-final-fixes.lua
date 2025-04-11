@@ -53,9 +53,6 @@ if not missing then
 
     -- RANDOMIZE
     local function randomize(recipe_name, allowed, pattern)
-        if recipe_name == "centrifuge" then
-            log("h")
-        end
         log("  " .. util.get_progress() .. "                Recipe: " .. recipe_name)
         local r = recipes[recipe_name]
 
@@ -140,24 +137,25 @@ if not missing then
 
     local randomized = {}
     local waiting_for_category = {}
-    for n, t in search.tech(tech, true) do
-        local amt = #t.recipes
-        random.shuffle(t.recipes)
-        for i, r in ipairs(t.recipes) do
-            log(" " .. util.get_progress(nil, (i - 1) / amt) .. "          Step: " .. i .. "/" .. amt)
+    for technology_name, technology in search.tech(tech, true) do
+        local amt = #technology.recipes
+        random.shuffle(technology.recipes)
+        for recipe_index, recipe_name in ipairs(technology.recipes) do
+            log(" " .. util.get_progress(nil, (recipe_index - 1) / amt) .. "          Step: " .. recipe_index .. "/" .. amt)
             -- CALCULATE RESOURCES
-            if recipes[r] then
-                local to_randomize = old_resources.calculate(recipes[r], n, t.allowed, t.recipes)
+            if recipes[recipe_name] then
+                -- RANDOMIZE BASED ON SELECTED SETTING
                 if dependencies ~= "none" then
+                    local to_randomize = old_resources.calculate(recipes[recipe_name], technology_name, technology.allowed, technology.recipes)
                     for rn, p in pairs(to_randomize) do
                         if recipes[rn] then
                             if recipes_not_to_randomize[rn] then
-                                new_resources.calculate(recipes[rn], n, t.allowed, t.recipes)
+                                new_resources.calculate(recipes[rn], technology_name, technology.allowed, technology.recipes)
                             else
                                 local cat = true
                                 if dependencies == "branched" then
                                     cat = false
-                                    for pre_tech, _ in pairs(t.allowed) do
+                                    for pre_tech, _ in pairs(technology.allowed) do
                                         if new_resources.has_category(recipes[rn].category, pre_tech) then
                                             cat = true
                                             break
@@ -167,8 +165,8 @@ if not missing then
                                 if cat then
                                     -- RANDOMIZE
                                     randomized[rn] = true
-                                    local new = randomize(rn, t.allowed, p)
-                                    new_resources.calculate(new, n, t.allowed, t.recipes)
+                                    local new = randomize(rn, technology.allowed, p)
+                                    new_resources.calculate(new, technology_name, technology.allowed, technology.recipes)
                                     data.raw.recipe[rn] = prepare.final_recipe(new, data.raw.recipe[rn])
                                     waiting_for_category[rn] = nil
                                 else
@@ -178,21 +176,21 @@ if not missing then
                         end
                     end
                     if dependencies == "branched" then
-                        for rn, p in ipairs(waiting_for_category) do
-                            local cat = false
-                            for pre_tech, _ in pairs(t.allowed) do
-                                if new_resources.has_category(recipes[rn].category, pre_tech) then
-                                    cat = true
+                        for recipe_name, recipe_pattern in ipairs(waiting_for_category) do
+                            local randomization_allowed = false
+                            for pre_tech, _ in pairs(technology.allowed) do
+                                if new_resources.has_category(recipes[recipe_name].category, pre_tech) then
+                                    randomization_allowed = true
                                     break
                                 end
                             end
-                            if cat then
+                            if randomization_allowed then
                                 -- RANDOMIZE
-                                randomized[rn] = true
-                                local new = randomize(rn, t.allowed, p)
-                                new_resources.calculate(new, n, t.allowed, t.recipes)
-                                data.raw.recipe[rn] = prepare.final_recipe(new, data.raw.recipe[rn])
-                                waiting_for_category[rn] = nil
+                                randomized[recipe_name] = true
+                                local randomized_recipe = randomize(recipe_name, technology.allowed, recipe_pattern)
+                                new_resources.calculate(randomized_recipe, technology_name, technology.allowed, technology.recipes)
+                                data.raw.recipe[recipe_name] = prepare.final_recipe(randomized_recipe, data.raw.recipe[recipe_name])
+                                waiting_for_category[recipe_name] = nil
                             end
                         end
                     end
