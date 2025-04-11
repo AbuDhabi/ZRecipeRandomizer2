@@ -112,6 +112,17 @@ function F.ingredient_combinations(old_resources, new_resources, pattern, change
     for i, _ in ipairs(changeable) do
         pick[i] = {}
     end
+    -- ANTI-ORE PROCEDURE
+    local new_avail_item = {}
+    if random.int(10) < 10 then
+        for _, item in pairs(avail.item) do
+            if not string.match(item, "-ore$") then
+                table.insert(new_avail_item, item)
+            end
+        end
+        avail.item = new_avail_item
+    end
+
     random.shuffle(avail.item)
     random.shuffle(avail.fluid)
     for t, a in pairs(avail) do
