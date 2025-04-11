@@ -16,7 +16,9 @@
         "(?) SciencePackGalore",
         "? elevated-rails",
         "? space-age",
-        "? quality"
+        "? quality",
+        "? discovery_tree",
+        "! zEstateRandomizer"
     ],
     "description": "Randomizes all recipe ingredients to make every game feel different!\nFully configurable, theoretically works with all mods, checks dependencies, keeps recipes fair!\n\nCredit goes to Villfuk02 for the version that works on 1.x.",
     "factorio_version": "2.0"
