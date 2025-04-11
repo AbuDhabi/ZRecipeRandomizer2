@@ -33,7 +33,7 @@ data:extend({
         name = "z-randomizer-dependencies",
 		order = "bb",
         setting_type = "startup",
-        default_value = "linear",
+        default_value = "branched",
         allowed_values = {"none", "linear", "branched"},
     },
     {
