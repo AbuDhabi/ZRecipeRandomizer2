@@ -235,6 +235,15 @@ function F.filter_recipes(recipes)
         end
     end
 
+    if mods["quality"] and do_hidden == "calculate" then
+        --- REMOVE RECYCLING RECIPES, THEY WILL BE REGENERATED LATER
+        for recipe_name, _ in pairs(recipes) do
+            if string.match(recipe_name, "-recycling$") then
+                recipes[recipe_name] = nil
+            end
+        end
+    end
+
     return recipes
 end
 

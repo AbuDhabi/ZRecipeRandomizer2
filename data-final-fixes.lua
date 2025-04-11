@@ -28,6 +28,7 @@ else
     time_variance = 1.5
 end
 local dependencies = settings.startup["z-randomizer-dependencies"].value
+local hidden = settings.startup["z-randomizer-hidden"].value
 
 -- PREPARE TABLES
 local recipes, rocket_launch = prepare.recipes()
@@ -219,7 +220,6 @@ if not missing then
     log("RANDOMIZING DONE!")
 
     -- RECYCLING
-    local hidden = settings.startup["z-randomizer-hidden"].value
     if mods["quality"] and hidden == "calculate" then
         require("__quality__.data-updates")
         log("RECALCULATED RECYCLING RECIPES.")
