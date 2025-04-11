@@ -54,24 +54,24 @@ if not missing then
     -- RANDOMIZE
     local function randomize(recipe_name, allowed, pattern)
         log("  " .. util.get_progress() .. "                Recipe: " .. recipe_name)
-        local r = recipes[recipe_name]
+        local recipe = recipes[recipe_name]
 
         if not pattern then
             pattern = old_resources.pattern(recipe_name)
         end
 
         if not pattern or #pattern.changeable == 0 then
-            if dupe[r.category] then
-                local dupe_address = util.dupe_address(r.ing)
-                dupe[r.category][dupe_address] = recipe_name
+            if dupe[recipe.category] then
+                local dupe_address = util.dupe_address(recipe.ing)
+                dupe[recipe.category][dupe_address] = recipe_name
             end
             log("  " .. util.get_progress() .. "                     (nothing to change)")
-            return table.deepcopy(r)
+            return table.deepcopy(recipe)
         end
 
         local vv, cv, tv, rv = value_variance, complexity_variance, time_variance, resource_variance
 
-        local nt = random.time(r.time)
+        local nt = random.time(recipe.time)
 
         local cycles, total_tries, tries = 0, 0, 0
 
@@ -83,24 +83,24 @@ if not missing then
 
             local max_raw = resource_util.multiply(pre_raw, max_value / pattern.raw.value)
 
-            for ings in search.ingredient_combinations(old_resources, new_resources, pattern.pattern, pattern.changeable, r, max_raw, max_value, cv, ingredients_not_to_randomize, dependencies == "branched", allowed) do
+            for ings in search.ingredient_combinations(old_resources, new_resources, pattern.pattern, pattern.changeable, recipe, max_raw, max_value, cv, ingredients_not_to_randomize, dependencies == "branched", allowed) do
                 tries = tries + 1
                 total_tries = total_tries + 1
-                if dupe[r.category] then
+                if dupe[recipe.category] then
                     local dupe_address = util.dupe_address(ings)
-                    if dupe[r.category][dupe_address] then
+                    if dupe[recipe.category][dupe_address] then
                         ings = nil
                     end
                 end
                 ings = prepare.amounts(old_resources, new_resources, pattern.changeable, ings, min_value, max_value, max_raw, min_time, max_time, resource_variance, unstackable)
                 if ings then
-                    local nr = table.deepcopy(r)
+                    local nr = table.deepcopy(recipe)
                     nr.ing = ings
                     nr.time = nt
 
-                    if dupe[r.category] then
+                    if dupe[recipe.category] then
                         local dupe_address = util.dupe_address(ings)
-                        dupe[r.category][dupe_address] = recipe_name
+                        dupe[recipe.category][dupe_address] = recipe_name
                     end
 
                     log(" " .. util.get_progress() .. "                     (cycles: " .. cycles .. " tries: " .. total_tries .. ")")
@@ -125,12 +125,12 @@ if not missing then
                 pattern.pattern[to_change].amount = pattern.pattern[to_change].oa
                 pattern.raw = resource_util.subtract(pattern.raw, pattern.raws[to_change])
             else
-                if dupe[r.category] then
-                    local dupe_address = util.dupe_address(r.ing)
-                    dupe[r.category][dupe_address] = recipe_name
+                if dupe[recipe.category] then
+                    local dupe_address = util.dupe_address(recipe.ing)
+                    dupe[recipe.category][dupe_address] = recipe_name
                 end
                 log(" " .. util.get_progress() .. "                     (gave up after " .. cycles .. " cycles)")
-                return table.deepcopy(r)
+                return table.deepcopy(recipe)
             end
         end
     end
@@ -147,30 +147,30 @@ if not missing then
                 -- RANDOMIZE BASED ON SELECTED SETTING
                 if dependencies ~= "none" then
                     local to_randomize = old_resources.calculate(recipes[recipe_name], technology_name, technology.allowed, technology.recipes)
-                    for rn, p in pairs(to_randomize) do
-                        if recipes[rn] then
-                            if recipes_not_to_randomize[rn] then
-                                new_resources.calculate(recipes[rn], technology_name, technology.allowed, technology.recipes)
+                    for recipe_to_randomize_name, recipe_to_randomize_pattern in pairs(to_randomize) do
+                        if recipes[recipe_to_randomize_name] then
+                            if recipes_not_to_randomize[recipe_to_randomize_name] then
+                                new_resources.calculate(recipes[recipe_to_randomize_name], technology_name, technology.allowed, technology.recipes)
                             else
-                                local cat = true
+                                local randomization_allowed = true
                                 if dependencies == "branched" then
-                                    cat = false
+                                    randomization_allowed = false
                                     for pre_tech, _ in pairs(technology.allowed) do
-                                        if new_resources.has_category(recipes[rn].category, pre_tech) then
-                                            cat = true
+                                        if new_resources.has_category(recipes[recipe_to_randomize_name].category, pre_tech) then
+                                            randomization_allowed = true
                                             break
                                         end
                                     end
                                 end
-                                if cat then
+                                if randomization_allowed then
                                     -- RANDOMIZE
-                                    randomized[rn] = true
-                                    local new = randomize(rn, technology.allowed, p)
-                                    new_resources.calculate(new, technology_name, technology.allowed, technology.recipes)
-                                    data.raw.recipe[rn] = prepare.final_recipe(new, data.raw.recipe[rn])
-                                    waiting_for_category[rn] = nil
+                                    randomized[recipe_to_randomize_name] = true
+                                    local randomized_recipe = randomize(recipe_to_randomize_name, technology.allowed, recipe_to_randomize_pattern)
+                                    new_resources.calculate(randomized_recipe, technology_name, technology.allowed, technology.recipes)
+                                    data.raw.recipe[recipe_to_randomize_name] = prepare.final_recipe(randomized_recipe, data.raw.recipe[recipe_to_randomize_name])
+                                    waiting_for_category[recipe_to_randomize_name] = nil
                                 else
-                                    waiting_for_category[rn] = p
+                                    waiting_for_category[recipe_to_randomize_name] = recipe_to_randomize_pattern
                                 end
                             end
                         end
