@@ -218,6 +218,13 @@ if not missing then
     end
     log("RANDOMIZING DONE!")
 
+    -- RECYCLING
+    local hidden = settings.startup["z-randomizer-hidden"].value
+    if mods["quality"] and hidden == "calculate" then
+        require("__quality__.data-updates")
+        log("RECALCULATED RECYCLING RECIPES.")
+    end
+
     -- CHECK MISSING AGAIN
     local not_calculated = old_resources.all_not_calculated()
     local unlocked_items = old_resources.unlocked_items()
