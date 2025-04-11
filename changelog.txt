@@ -1,4 +1,11 @@
 ---------------------------------------------------------------------------------------------------
+Version: 2.0.4
+Date: 2025.04.11
+  Changes:
+    - Refactoring
+    - Recalculating recycling recipes after randomization (if hidden recipes set to calculated)
+    - Changed default dependency mode to branched
+---------------------------------------------------------------------------------------------------
 Version: 2.0.3
 Date: 2025.04.10
   Changes:
@@ -9,7 +16,7 @@ Version: 2.0.2
 Date: 2025.04.09
   Changes:
     - Added presets for Space Age (thank you, slugger99099)
-	- Allowed Quality and Space Age mods as optional dependencies
+    - Allowed Quality and Space Age mods as optional dependencies
 ---------------------------------------------------------------------------------------------------
 Version: 2.0.1
 Date: 2025.04.08
