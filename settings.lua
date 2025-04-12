@@ -119,6 +119,13 @@ data:extend({
         default_value = p.not_random_ore_processing
     },
     {
+        type = "bool-setting",
+        name = "z-randomizer-avoid-ore-ingredients",
+		order = "df",
+        setting_type = "startup",
+        default_value = p.avoid_ore_ingredients
+    },
+    {
         type = "string-setting",
         name = "z-randomizer-forbidden-recipes",
 		order = "fa",

@@ -2,6 +2,8 @@ local random = require "scripts.random"
 local resource_util = require "scripts.resource_util"
 local util = require "scripts.util"
 
+local avoid_ore = settings.startup["z-randomizer-avoid-ore-ingredients"].value
+
 local F = {}
 
 function F.tech(tech, check_dependencies)
@@ -112,15 +114,18 @@ function F.ingredient_combinations(old_resources, new_resources, pattern, change
     for i, _ in ipairs(changeable) do
         pick[i] = {}
     end
-    -- ANTI-ORE PROCEDURE
-    local new_avail_item = {}
-    if random.int(10) < 10 then
-        for _, item in pairs(avail.item) do
-            if not string.match(item, "-ore$") then
-                table.insert(new_avail_item, item)
+
+    -- PREVENTS ORES 90% OF THE TIME
+    if avoid_ore == true then
+        local new_avail_item = {}
+        if random.int(10) < 10 then
+            for _, item in pairs(avail.item) do
+                if not string.match(item, "-ore$") then
+                    table.insert(new_avail_item, item)
+                end
             end
+            avail.item = new_avail_item
         end
-        avail.item = new_avail_item
     end
 
     random.shuffle(avail.item)

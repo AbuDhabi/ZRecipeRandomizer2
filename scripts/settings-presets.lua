@@ -17,6 +17,7 @@ local presets = {
         not_random_categories = "",
         not_random_ingredients = "[item=rocket-part] [fluid=water] [fluid=steam]",
         not_random_ore_processing = true,
+        avoid_ore_ingredients = true,
         forbidden_categories = "",
         forbidden_recipes = "",
         forbidden_ingredients = "[item=barrel]",
@@ -65,7 +66,7 @@ local presets = {
 		forbidden_ingredients = "[item=barrel][item=turbo-loader][item=express-loader][item=fast-loader][item=loader]",
         forbidden_results = "[item=barrel][item=turbo-loader][item=express-loader][item=fast-loader][item=loader]",
         not_random_ingredients = "[item=rocket-part] [fluid=water] [fluid=steam] [fluid=lava] [fluid=fusion-plasma] [fluid=thruster-fuel] [fluid=thruster-oxidizer] [fluid=holmium-solution] [fluid=electrolyte] [item=promethium-asteroid-chunk]",
-        not_random_recipes = "[recipe=nuclear-fuel-reprocessing] [recipe=fluoroketone-cooling] [recipe=acid-neutralisation] [recipe=steam-condensation] [recipe=ice-melting] [recipe=coal-synthesis] [recipe=wood-processing] [recipe=fish-breeding]",
+        not_random_recipes = "[recipe=nuclear-fuel-reprocessing] [recipe=fluoroketone-cooling] [recipe=acid-neutralisation] [recipe=steam-condensation] [recipe=ice-melting] [recipe=coal-synthesis] [recipe=wood-processing] [recipe=fish-breeding] [recipe=copper-bacteria-cultivation] [recipe=iron-bacteria-cultivation]",
         not_random_resources = "",
         not_random_categories = "crushing",
 	}
