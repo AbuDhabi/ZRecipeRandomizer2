@@ -1,4 +1,12 @@
 ---------------------------------------------------------------------------------------------------
+Version: 2.0.6
+Date: 2025.04.12
+  Changes:
+    - Refactoring
+    - Add wood and fish to unlockable raw materials after agricultural science
+    - Add several recipes (essential for progress) and fluids (non-barrelable) to not be randomized
+    - Add note that cliff explosives will be randomized even barrels are forbidden
+---------------------------------------------------------------------------------------------------
 Version: 2.0.5
 Date: 2025.04.11
   Changes:
