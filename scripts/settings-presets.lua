@@ -67,7 +67,7 @@ local presets = {
         forbidden_results = "[item=barrel][item=turbo-loader][item=express-loader][item=fast-loader][item=loader]",
         not_random_ingredients = "[item=rocket-part] [fluid=water] [fluid=steam] [fluid=lava] [fluid=fusion-plasma] [fluid=thruster-fuel] [fluid=thruster-oxidizer] [fluid=holmium-solution] [fluid=electrolyte] [item=promethium-asteroid-chunk]",
         not_random_recipes = "[recipe=nuclear-fuel-reprocessing] [recipe=fluoroketone-cooling] [recipe=acid-neutralisation] [recipe=steam-condensation] [recipe=ice-melting] [recipe=coal-synthesis] [recipe=wood-processing] [recipe=fish-breeding] [recipe=copper-bacteria-cultivation] [recipe=iron-bacteria-cultivation]",
-        not_random_resources = "",
+        not_random_resources = "[item=wood] [item=raw-fish]",
         not_random_categories = "crushing",
 	}
 }

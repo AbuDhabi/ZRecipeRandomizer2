@@ -1,4 +1,9 @@
 ---------------------------------------------------------------------------------------------------
+Version: 2.0.8
+Date: 2025.04.15
+  Changes:
+    - Put wood and fish back to non-randomized list as a workaround for a bug (https://mods.factorio.com/mod/ZRecipeRandomizer2/discussion/67fbe3a8d2e660e78afd3e7e)
+---------------------------------------------------------------------------------------------------
 Version: 2.0.7
 Date: 2025.04.12
   Changes:
