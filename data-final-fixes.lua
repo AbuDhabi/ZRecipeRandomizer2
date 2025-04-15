@@ -138,15 +138,15 @@ if not missing then
 
     local randomized = {}
     local waiting_for_category = {}
-    for technology_name, technology in search.tech(tech, true) do
-        local amt = #technology.recipes
-        random.shuffle(technology.recipes)
-        for recipe_index, recipe_name in ipairs(technology.recipes) do
-            log(" " .. util.get_progress(nil, (recipe_index - 1) / amt) .. "          Step: " .. recipe_index .. "/" .. amt)
-            -- CALCULATE RESOURCES
-            if recipes[recipe_name] then
-                -- RANDOMIZE BASED ON SELECTED SETTING
-                if dependencies ~= "none" then
+    -- RANDOMIZE BASED ON SELECTED SETTING
+    if dependencies ~= "none" then
+        for technology_name, technology in search.tech(tech, true) do
+            local amt = #technology.recipes
+            random.shuffle(technology.recipes)
+            for recipe_index, recipe_name in ipairs(technology.recipes) do
+                log(" " .. util.get_progress(nil, (recipe_index - 1) / amt) .. "          Step: " .. recipe_index .. "/" .. amt)
+                -- CALCULATE RESOURCES
+                if recipes[recipe_name] then
                     local to_randomize = old_resources.calculate(recipes[recipe_name], technology_name, technology.allowed, technology.recipes)
                     for recipe_to_randomize_name, recipe_to_randomize_pattern in pairs(to_randomize) do
                         if recipes[recipe_to_randomize_name] then
@@ -199,6 +199,7 @@ if not missing then
             end
         end
     end
+
     -- RANDOMIZE WITHOUT DEPENDENCIES
     if dependencies == "none" then
         for n, t in search.tech(tech, true) do
