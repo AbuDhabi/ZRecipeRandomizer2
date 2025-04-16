@@ -8,11 +8,11 @@ function resourcesModule.new()
 
 	local F = {}
 
-	F.rawTBN = {}
+	F.raw = {}
 	F.default = {}
 	F.waiting = {}
 	F.prepared = {}
-	F.unlocked_itemsTBN = {}
+	F.unlocked_items = {}
 	F.unlocked_categories = {}
 	F.category_unlocks = {}
 	F.tech_defaults = {}
@@ -52,12 +52,12 @@ function resourcesModule.new()
 		end
 	end
 
-	function F.raw(item)
-		return F.rawTBN[item]
+	function F.get_raw(item)
+		return F.raw[item]
 	end
 
-	function F.unlocked_items()
-		return F.unlocked_itemsTBN
+	function F.get_unlocked_items()
+		return F.unlocked_items
 	end
 
 	function F.all_not_calculated()
@@ -72,8 +72,8 @@ function resourcesModule.new()
 
 	local function unlock(item, recipe)
 		local un = false
-		if not F.unlocked_itemsTBN[item] then
-			F.unlocked_itemsTBN[item] = {}
+		if not F.unlocked_items[item] then
+			F.unlocked_items[item] = {}
 			un = true
 		else
 			for _, value in ipairs(F.current_recipes) do
@@ -83,8 +83,8 @@ function resourcesModule.new()
 				end
 			end
 		end
-		if un and not F.unlocked_itemsTBN[item][F.current_tech] then
-			F.unlocked_itemsTBN[item][F.current_tech] = true
+		if un and not F.unlocked_items[item][F.current_tech] then
+			F.unlocked_items[item][F.current_tech] = true
 			if F.category_unlocks[item] then
 				for _, cat in pairs(F.category_unlocks[item]) do
 					if not F.unlocked_categories[cat] then
@@ -115,7 +115,7 @@ function resourcesModule.new()
 		for i = 1, #recipe.ing, 1 do
 			local ing = recipe.ing[i]
 			local item = util.dot(ing)
-			local r = table.deepcopy(F.rawTBN[item])
+			local r = table.deepcopy(F.raw[item])
 			if r and not r.time then
 				r.time = 1
 			end
@@ -156,7 +156,7 @@ function resourcesModule.new()
 		end
 		local ready = true
 		for name, amt in pairs(r.ing) do
-			local got = F.rawTBN[name]
+			local got = F.raw[name]
 			if got then
 				if not got.time then
 					comp.time = comp.time + amt
@@ -242,8 +242,8 @@ function resourcesModule.new()
 			local svs = {}
 			for res, amt in pairs(ex) do
 				if not F.default[res] then
-					if F.rawTBN[res] then
-						svs[res] = math.min(comp.value / ndra, F.rawTBN[res].value * amt)
+					if F.raw[res] then
+						svs[res] = math.min(comp.value / ndra, F.raw[res].value * amt)
 						if not F.waiting[res] then
 							F.waiting[res] = {[recipe_name] = true}
 						elseif F.waiting[res][recipe_name] == nil then
@@ -299,7 +299,7 @@ function resourcesModule.new()
 
 	function F.update(item, new_comp, recipe, trace, override_default)
 		if new_comp == nil then
-			if F.rawTBN[item] then
+			if F.raw[item] then
 				return
 			end
 		else
@@ -307,23 +307,23 @@ function resourcesModule.new()
 				unlock(item, recipe)
 			end
 			if F.default[item] and not override_default then
-				if F.rawTBN[item] and F.rawTBN[item].value * 0.99999 > new_comp.value and F.dont_randomize_ingredients then
+				if F.raw[item] and F.raw[item].value * 0.99999 > new_comp.value and F.dont_randomize_ingredients then
 					log(util.get_progress() .. "\nAlternative data for resource " .. item .. ": " .. serpent.line(new_comp))
 				end
-				if not F.rawTBN[item].time then
-					F.rawTBN[item].time = new_comp.time
-					F.rawTBN[item].complexity = new_comp.complexity
-				elseif F.rawTBN[item].time > new_comp.time then
-					F.rawTBN[item].time = new_comp.time
-					F.rawTBN[item].complexity = new_comp.complexity
+				if not F.raw[item].time then
+					F.raw[item].time = new_comp.time
+					F.raw[item].complexity = new_comp.complexity
+				elseif F.raw[item].time > new_comp.time then
+					F.raw[item].time = new_comp.time
+					F.raw[item].complexity = new_comp.complexity
 				else
 					return
 				end
 			else
-				if not F.rawTBN[item] then
-					F.rawTBN[item] = new_comp
-				elseif F.rawTBN[item].value * 0.99999 > new_comp.value then
-					F.rawTBN[item] = new_comp
+				if not F.raw[item] then
+					F.raw[item] = new_comp
+				elseif F.raw[item].value * 0.99999 > new_comp.value then
+					F.raw[item] = new_comp
 				else
 					return
 				end
@@ -393,7 +393,7 @@ function resourcesModule.new()
 					break
 				end
 			end
-			if a and (not F.unlocked_itemsTBN[tbl.item] or u) then
+			if a and (not F.unlocked_items[tbl.item] or u) then
 				F.update(tbl.item, {value = tbl.value, complexity = util.default_complexity, [tbl.item] = 1}, nil, {}, true)
 			end
 		end
@@ -443,7 +443,7 @@ function resourcesModule.new()
 
 	function F.is_allowed(item, allowed)
 		for pre_tech, _ in pairs(allowed) do
-			if F.unlocked_itemsTBN[item] and F.unlocked_itemsTBN[item][pre_tech] then
+			if F.unlocked_items[item] and F.unlocked_items[item][pre_tech] then
 				return true
 			end
 		end
@@ -453,8 +453,8 @@ function resourcesModule.new()
 	function F.recalculate_value(r)
 		local value = 0
 		for key, amt in pairs(r) do
-			if amt > 0 and F.rawTBN[key] then
-				value = value + F.rawTBN[key].value * amt
+			if amt > 0 and F.raw[key] then
+				value = value + F.raw[key].value * amt
 			end
 		end
 		r.value = value
@@ -462,7 +462,7 @@ function resourcesModule.new()
 	end
 
 	function F.get_all()
-		return {raw = F.rawTBN, default = F.default, waiting = F.waiting, prepared = F.prepared}
+		return {raw = F.raw, default = F.default, waiting = F.waiting, prepared = F.prepared}
 	end
 
 	return F

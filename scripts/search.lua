@@ -74,7 +74,7 @@ function F.tech(tech, check_dependencies)
     end
 end
 
-function F.ingredient_combinations(old_resources, new_resources, pattern, changeable, recipe, max_raw, max_value, complexity_variance, dont_randomize_ingredients, branched, allowed)
+function F.ingredient_combinations(old_resources, new_resources, pattern, changeable, recipe, max_raw, max_value, complexity_variance, dont_randomize_ingredients, branched, technologies_allowed)
     local max_rr = table.deepcopy(max_raw)
     local min_comp, max_comp = math.huge, 0
     for key, value in pairs(pattern) do
@@ -98,10 +98,10 @@ function F.ingredient_combinations(old_resources, new_resources, pattern, change
             used[util.dot(value)] = true
         end
     end
-    for entry, _ in pairs(old_resources.unlocked_items()) do
+    for entry, _ in pairs(old_resources.get_unlocked_items()) do
         if not used[entry] then
-            local raw = new_resources.raw(entry)
-            if raw and raw.value > 0 and raw.value <= max_value and min_comp <= raw.complexity and max_comp >= raw.complexity and not dont_randomize_ingredients[entry] and not (#recipe.res == 1 and util.dot(recipe.res[1]) == entry) and (not branched or new_resources.is_allowed(entry, allowed)) then
+            local raw = new_resources.get_raw(entry)
+            if raw and raw.value > 0 and raw.value <= max_value and min_comp <= raw.complexity and max_comp >= raw.complexity and not dont_randomize_ingredients[entry] and not (#recipe.res == 1 and util.dot(recipe.res[1]) == entry) and (not branched or new_resources.is_allowed(entry, technologies_allowed)) then
                 if resource_util.fits(raw, max_rr) then
                     local type = string.match(entry, "(%a+)%.")
                     avail[type][#avail[type]+1] = entry

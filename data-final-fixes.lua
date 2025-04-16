@@ -53,7 +53,7 @@ if not missing then
     log("PREPARATION DONE!")
 
     -- RANDOMIZE
-    local function randomize(recipe_name, allowed, pattern)
+    local function randomize(recipe_name, technologies_allowed, pattern)
         log("  " .. util.get_progress() .. "                Recipe: " .. recipe_name)
         local recipe = recipes[recipe_name]
 
@@ -84,7 +84,7 @@ if not missing then
 
             local max_raw = resource_util.multiply(pre_raw, max_value / pattern.raw.value)
 
-            for ings in search.ingredient_combinations(old_resources, new_resources, pattern.pattern, pattern.changeable, recipe, max_raw, max_value, cv, ingredients_not_to_randomize, dependencies == "branched", allowed) do
+            for ings in search.ingredient_combinations(old_resources, new_resources, pattern.pattern, pattern.changeable, recipe, max_raw, max_value, cv, ingredients_not_to_randomize, dependencies == "branched", technologies_allowed) do
                 tries = tries + 1
                 total_tries = total_tries + 1
                 if dupe[recipe.category] then
@@ -228,7 +228,7 @@ if not missing then
 
     -- CHECK MISSING AGAIN
     local not_calculated = old_resources.all_not_calculated()
-    local unlocked_items = old_resources.unlocked_items()
+    local unlocked_items = old_resources.get_unlocked_items()
     local missing_recipes = missing_check.prepare_recipes(not_calculated, unlocked_items)
     if next(missing_recipes) then
         missing = missing_check.resources(not_calculated, default_values, unlocked_items)

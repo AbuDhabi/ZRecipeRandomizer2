@@ -529,7 +529,7 @@ function F.amounts(old_resources, new_resources, changeable, ings, min_value, ma
     raw_left.value = max_raw.value
     local raws = {}
     for _, i in ipairs(changeable) do
-        raws[i] = table.deepcopy(new_resources.raw(ings[i].string))
+        raws[i] = table.deepcopy(new_resources.get_raw(ings[i].string))
         raws[i].complexity = nil
         if raws[i].time == nil then
             raws[i].time = 1
