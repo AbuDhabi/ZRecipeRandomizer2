@@ -264,21 +264,21 @@ end
 
 function F.default_values(recipes)
     local ret = {}
-    for p, r, v in string.gmatch(string.gsub(settings.startup["z-randomizer-default-values"].value, "%s+", ""), "%(([%a%d%-%*%[%]=_]*):([%a%d%-%*%[%]=_]+):(%d*%.*%d+)%)") do
+    for p, r, resource_value in string.gmatch(string.gsub(settings.startup["z-randomizer-default-values"].value, "%s+", ""), "%(([%a%d%-%*%[%]=_]*):([%a%d%-%*%[%]=_]+):(%d*%.*%d+)%)") do
         local tech = nil
         local items = nil
-        for t, n in string.gmatch(p, "%[(%a+)=([%a%d%-_:]+)%]") do
-            if t == "technology" then
-                tech = n
+        for prerequisite_type, prerequisite_name in string.gmatch(p, "%[(%a+)=([%a%d%-_:]+)%]") do
+            if prerequisite_type == "technology" then
+                tech = prerequisite_name
                 break
             else
                 if not items then
                     items = {}
                 end
-                items[#items + 1] = util.dot(t, n)
+                items[#items + 1] = util.dot(prerequisite_type, prerequisite_name)
             end
         end
-        local total = {tech = tech, value = tonumber(v)}
+        local total = {tech = tech, value = tonumber(resource_value)}
         if not tech then
             total["items"] = items
         end
