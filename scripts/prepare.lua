@@ -3,6 +3,7 @@ local resource_util = require "scripts.resource_util"
 local util = require "scripts.util"
 
 local do_hidden = settings.startup["z-randomizer-hidden"].value
+local random_scrap = settings.startup["z-randomizer-random-scrap"].value
 
 local F = {}
 
@@ -12,6 +13,27 @@ function F.recipes()
     -- POPULATE RECIPES FROM FACTORIO DATA
     for recipe_name, recipe_definition in pairs(data.raw.recipe) do
         local original = nil
+		if random_scrap then
+			-- swap results for ingredients and probability for amount to trick the algo into randmoizing scrap
+			-- (holmium is guaranteed to remain due to changes in resources.lua)
+			local old_recipe = table.deepcopy(recipe)
+			if recipe_name and recipe_name == "scrap-recycling" then
+				recipe_definition.ingredients[1] = {type="item", name="iron-gear-wheel", amount=20}
+				recipe_definition.ingredients[2] = {type="item", name="solid-fuel", amount=7}
+				recipe_definition.ingredients[3] = {type="item", name="concrete", amount=6}
+				recipe_definition.ingredients[4] = {type="item", name="ice", amount=5}
+				recipe_definition.ingredients[5] = {type="item", name="steel-plate", amount=4}
+				recipe_definition.ingredients[6] = {type="item", name="battery", amount=4}
+				recipe_definition.ingredients[7] = {type="item", name="stone", amount=4}
+				recipe_definition.ingredients[8] = {type="item", name="advanced-circuit", amount=3}
+				recipe_definition.ingredients[9] = {type="item", name="copper-cable", amount=3}
+				recipe_definition.ingredients[10] = {type="item", name="processing-unit", amount=2}
+				recipe_definition.ingredients[11] = {type="item", name="low-density-structure", amount=1}
+				recipe_definition.ingredients[12] = {type="item", name="holmium-ore", amount=1}
+				recipe_definition.results = {}
+				recipe_definition.results[1] = {type="item", name="scrap", amount=1}
+			end
+		end
         if recipe_definition.normal then
             original = table.deepcopy(recipe_definition.normal)
         elseif recipe_definition.expensive then
@@ -237,8 +259,9 @@ function F.filter_recipes(recipes)
 
     if mods["quality"] and do_hidden == "calculate" then
         --- REMOVE RECYCLING RECIPES, THEY WILL BE REGENERATED LATER
+        -- if we're randomizing scrap, don't remove that recipe
         for recipe_name, _ in pairs(recipes) do
-            if string.match(recipe_name, "-recycling$") then
+            if string.match(recipe_name, "-recycling$") and (recipe_name ~= "scrap-recycling" or not random_scrap) then
                 recipes[recipe_name] = nil
             end
         end
@@ -518,7 +541,7 @@ function F.get_ingredients_and_recipe_not_to_randomize(recipes)
     return rec, ing
 end
 
-function F.amounts(old_resources, new_resources, changeable, ings, min_value, max_value, max_raw, min_time, max_time, resource_variance, unstackable)
+function F.amounts(old_resources, new_resources, changeable, ings, min_value, max_value, max_raw, min_time, max_time, resource_variance, unstackable, recipe_name)
     if ings == nil then
         return
     end
@@ -549,12 +572,19 @@ function F.amounts(old_resources, new_resources, changeable, ings, min_value, ma
         end
         max_amt = max_amt / 4 / #changeable
         local min_amt = ings[i].type == "item" and 1 or 0.1
+        local min_amt_coefficient = 0.2
+		-- scrap was only giving 1% at everything so
+		-- give it smaller min and slower s changes
+		if random_scrap and recipe_name == "scrap-recycling" then
+			min_amt = min_amt / 20
+			min_amt_coefficient = 0.8
+		end
         while s >= max_amt do
-            s = s * 0.2
-            if s * 0.2 < min_amt then
-                s = min_amt
-                break
-            end
+			s = s * min_amt_coefficient
+			if s * min_amt_coefficient < min_amt then
+				s = min_amt
+				break
+			end
         end
         units[i] = s
     end
@@ -568,10 +598,13 @@ function F.amounts(old_resources, new_resources, changeable, ings, min_value, ma
     for key, _ in pairs(sum) do
         achievable[key] = raw_left[key]
     end
-    achievable = old_resources.recalculate_value(achievable).value
-    if achievable < min_value then
-        return
-    end
+	-- don't recalculate based on artificially inflated scrap numbers
+	if not (random_scrap and recipe_name == "scrap-recycling") then
+		achievable = old_resources.recalculate_value(achievable).value
+		if achievable < min_value then
+			return
+		end
+	end
 
     local amts = table.deepcopy(units)
     while true do
@@ -645,7 +678,20 @@ function F.final_recipe(new_recipe, old_recipe)
             new_recipe.ing[i].fluidbox_index = ing.fluidbox_index
         end
     end
-    final.ingredients = table.deepcopy(new_recipe.ing)
+    -- switch scrap ingredients and results back
+	if random_scrap and old_recipe.name == "scrap-recycling" then
+		final.ingredients = table.deepcopy(new_recipe.res)
+		final.results = table.deepcopy(new_recipe.ing)
+		for _ , res in pairs(final.results) do
+			res.probability = res.amount / 100
+			if res.probability > 1 then
+				res.probability = 1
+			end
+			res.amount = 1
+		end
+	else
+		final.ingredients = table.deepcopy(new_recipe.ing)
+	end
     final.energy_required = new_recipe.time
     return final
 end
