@@ -93,7 +93,8 @@ if not missing then
                         ings = nil
                     end
                 end
-                ings = prepare.amounts(old_resources, new_resources, pattern.changeable, ings, min_value, max_value, max_raw, min_time, max_time, resource_variance, unstackable)
+				-- pass recipe name so we can detect scrap-recycling
+                ings = prepare.amounts(old_resources, new_resources, pattern.changeable, ings, min_value, max_value, max_raw, min_time, max_time, resource_variance, unstackable, recipe_name)
                 if ings then
                     local nr = table.deepcopy(recipe)
                     nr.ing = ings

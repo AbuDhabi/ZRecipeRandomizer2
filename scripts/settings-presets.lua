@@ -18,6 +18,7 @@ local presets = {
         not_random_ingredients = "[item=rocket-part] [fluid=water] [fluid=steam]",
         not_random_ore_processing = true,
         avoid_ore_ingredients = true,
+		random_scrap = false,
         forbidden_categories = "",
         forbidden_recipes = "",
         forbidden_ingredients = "[item=barrel]",

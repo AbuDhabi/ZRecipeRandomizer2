@@ -66,10 +66,17 @@ data:extend({
     {
         type = "string-setting",
         name = "z-randomizer-hidden",
-		order = "bz",
+		order = "by",
         setting_type = "startup",
         default_value = "calculate",
         allowed_values = {"ignore", "calculate", "randomize"}
+    },
+	{
+        type = "bool-setting",
+        name = "z-randomizer-random-scrap",
+		order = "bz",
+        setting_type = "startup",
+        default_value = p.random_scrap
     },
     {
         type = "string-setting",

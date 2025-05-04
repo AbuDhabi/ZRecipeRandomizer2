@@ -2,6 +2,7 @@ local resource_util = require "scripts.resource_util"
 local util = require "scripts.util"
 
 local resourcesModule = {}
+local random_scrap = settings.startup["z-randomizer-random-scrap"].value
 
 function resourcesModule.new()
 	local not_random_ores = settings.startup["z-randomizer-not-random-ore-processing"].value
@@ -122,7 +123,13 @@ function resourcesModule.new()
 			if not r and not F.prepared[recipe_name].removed_ings[item] then
 				return
 			end
-			if #changeable >= 5 or not r or r.value == 0 or r.value == math.huge or (not_random_ores and string.match(item, "^item%..*%-ore$")) or F.dont_randomize_ingredients[item] then
+			-- setting max_changeable to 12 for scrap-recycling means it gives up trying to change ingredients
+			-- on the 12th ingredient (holmium ore)
+			local max_changeable = 5
+			if random_scrap then
+				max_changeable = 12
+			end
+			if #changeable >= max_changeable or not r or r.value == 0 or r.value == math.huge or (not_random_ores and string.match(item, "^item%..*%-ore$")) or F.dont_randomize_ingredients[item] then
 				pattern[i] = {type = ing.type, name = ing.name, amount = ing.amount, value = r and r.value or 0}
 			else
 				changeable[#changeable + 1] = i
