@@ -1,4 +1,10 @@
 ---------------------------------------------------------------------------------------------------
+Version: 2.0.9
+Date: 2025.05.31
+  Changes:
+    - Add option to randomize scrap outputs (thanks, slugger99099)
+    - Add small electric poles to list of non random recipes for Space Age
+---------------------------------------------------------------------------------------------------
 Version: 2.0.8
 Date: 2025.04.15
   Changes:
